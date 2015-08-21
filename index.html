@@ -7,6 +7,8 @@
 		<script src="/js/three.min.js"></script>
 		<script src="/js/OrbitControls.js"></script>
 		<script src="/js/helvetiker_regular.typeface.js"></script>
+        <script src="/js/d3.js" charset="utf-8"></script>
+        <script src="/js/sankey.js"></script>
 		<script type="text/javascript">
 			var camera, scene, renderer;
 			var geometry, material, mesh;
@@ -16,10 +18,18 @@
 			offset = new THREE.Vector3(),
 			INTERSECTED, SELECTED;
 
-			var data = {"nodes": [{"count": 4505, "event": "homepage new"}, {"count": 496, "event": "Tutorial Shown"}, {"count": 488, "event": "Viewed report"}, {"count": 876, "event": "Viewed login page"}], "maxLinkCount": 4505, "links": [{"count": 496, "source": 0, "target": 1}, {"count": 488, "source": 0, "target": 2}, {"count": 149, "source": 2, "target": 1}, {"count": 876, "source": 0, "target": 3}, {"count": 212, "source": 3, "target": 1}, {"count": 409, "source": 3, "target": 2}], "maxNodeCount": 4505};
+			var data = {"nodes": [{"value": 4505, "event": "homepage new"}, {"value": 496, "event": "Tutorial Shown"}, {"value": 488, "event": "Viewed report"}, {"value": 876, "event": "Viewed login page"}], "maxLinkvalue": 4505, "links": [{"value": 496, "source": 0, "target": 1}, {"value": 488, "source": 0, "target": 2}, {"value": 149, "source": 2, "target": 1}, {"value": 876, "source": 0, "target": 3}, {"value": 212, "source": 3, "target": 1}, {"value": 409, "source": 3, "target": 2}], "maxNodevalue": 4505};
 
 			var funnelMarkers = {};
 			var objects = [];
+
+            var sankey = d3.sankey()
+                .size([window.innerWidth, window.innerHeight])
+                .nodeWidth(15)
+                .nodePadding(10)
+                .nodes(data.nodes)
+                .links(data.links)
+                .layout(32);
 
 			init();
 			animate();
@@ -87,9 +97,9 @@
 					var pastHalf = (i >= nodes.length * 0.5)
 					var node = nodes[i];
 					var marker = createFunnelMarker(node.event);
-					marker.position.x = pastHalf ? 50 : -50;
-					marker.position.y = Math.random() * 100 - 50;
-					marker.position.z = Math.random() * 20 - 10;
+					marker.position.z = (Math.floor(Math.random() * 3) - 1) * 30;
+					marker.position.x = (node.x / 10 - 50);
+					marker.position.y = (node.y / 10 - 10) * 5;
 					scene.add(marker);
 
 					funnelMarkers[i] = marker;
@@ -99,7 +109,7 @@
 				var links = data.links;
 				for (var i = links.length - 1; i >= 0; i--) {
 					var link = links[i];
-					connectFunnelMarkers(funnelMarkers[link.source], funnelMarkers[link.target], 3);
+					connectFunnelMarkers(funnelMarkers[nodes.indexOf(link.source)], funnelMarkers[nodes.indexOf(link.target)], 3);
 				};
 			}
 
