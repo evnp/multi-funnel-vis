@@ -9,7 +9,7 @@
 		<script src="/js/helvetiker_regular.typeface.js"></script>
 		<script type="text/javascript">
 			var camera, scene, renderer;
-			var geometry, material, mesh;
+			var geometry, material, mesh, plane;
 
 			var raycaster = new THREE.Raycaster();
 			var mouse = new THREE.Vector2(),
@@ -66,6 +66,13 @@
 
 				// // Example text options : {'font' : 'helvetiker','weight' : 'normal', 'style' : 'normal','size' : 100,'curveSegments' : 300};
 
+				plane = new THREE.Mesh(
+					new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+					new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } )
+				);
+				plane.visible = false;
+				scene.add( plane );
+
 				document.body.appendChild(renderer.domElement);
 
 				window.addEventListener('resize', function () {
@@ -74,14 +81,15 @@
 				  camera.updateProjectionMatrix();
 				});
 
-				renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-				renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				// renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				// renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				// renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
 
 				parseData(data);
 			}
 
 			function parseData(data) {
+				var max = data.maxNodeCount;
 				var nodes = data.nodes;
 				for (var i = nodes.length - 1; i >= 0; i--) {
 					var pastHalf = (i >= nodes.length * 0.5)
@@ -99,7 +107,7 @@
 				var links = data.links;
 				for (var i = links.length - 1; i >= 0; i--) {
 					var link = links[i];
-					connectFunnelMarkers(funnelMarkers[link.source], funnelMarkers[link.target], 3);
+					connectFunnelMarkers(funnelMarkers[link.source], funnelMarkers[link.target], (link.count / max) * 5);
 				};
 			}
 
@@ -158,97 +166,87 @@
 				controls.update();
 			}
 
-			function onDocumentMouseMove( event ) {
+			// function onDocumentMouseMove( event ) {
 
-				event.preventDefault();
+			// 	event.preventDefault();
 
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			// 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			// 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-				//
+			// 	raycaster.setFromCamera( mouse, camera );
 
-				raycaster.setFromCamera( mouse, camera );
+			// 	if ( SELECTED ) {
 
-				if ( SELECTED ) {
+			// 		var intersects = raycaster.intersectObject( plane );
+			// 		SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+			// 		return;
 
-					var intersects = raycaster.intersectObject( plane );
-					SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
-					return;
+			// 	}
 
-				}
+			// 	var intersects = raycaster.intersectObjects( scene.children );
 
-				var intersects = raycaster.intersectObjects( objects );
+			// 	if ( intersects.length > 0 ) {
 
-				if ( intersects.length > 0 ) {
+			// 		if ( INTERSECTED != intersects[ 0 ].object ) {
+			// 			INTERSECTED = intersects[ 0 ].object;
 
-					if ( INTERSECTED != intersects[ 0 ].object ) {
+			// 			plane.position.copy( INTERSECTED.position );
+			// 			plane.lookAt( camera.position );
+			// 		}
 
-						if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+			// 		renderer.domElement.style.cursor = 'pointer';
 
-						INTERSECTED = intersects[ 0 ].object;
-						INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+			// 	} else {
 
-						plane.position.copy( INTERSECTED.position );
-						plane.lookAt( camera.position );
+			// 		INTERSECTED = null;
 
-					}
+			// 		renderer.domElement.style.cursor = 'auto';
 
-					renderer.domElement.style.cursor = 'pointer';
+			// 	}
 
-				} else {
+			// }
 
-					if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+			// function onDocumentMouseDown( event ) {
 
-					INTERSECTED = null;
+			// 	event.preventDefault();
 
-					renderer.domElement.style.cursor = 'auto';
+			// 	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
 
-				}
+			// 	var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
 
-			}
+			// 	var intersects = raycaster.intersectObjects( scene.children );
 
-			function onDocumentMouseDown( event ) {
+			// 	if ( intersects.length > 0 ) {
+			// 		controls.enabled = false;
 
-				event.preventDefault();
+			// 		SELECTED = intersects[ 0 ].object;
 
-				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
+			// 		var intersects = raycaster.intersectObject( plane );
+			// 		offset.copy( intersects[ 0 ].point ).sub( plane.position );
 
-				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+			// 		renderer.domElement.style.cursor = 'move';
 
-				var intersects = raycaster.intersectObjects( scene.children );
+			// 	}
 
-				if ( intersects.length > 0 ) {
+			// }
 
-					controls.enabled = false;
+			// function onDocumentMouseUp( event ) {
 
-					SELECTED = intersects[ 0 ].object;
+			// 	event.preventDefault();
 
-					var intersects = raycaster.intersectObject( plane );
-					offset.copy( intersects[ 0 ].point ).sub( plane.position );
+			// 	controls.enabled = true;
 
-					renderer.domElement.style.cursor = 'move';
+			// 	if ( INTERSECTED ) {
 
-				}
+			// 		plane.position.copy( INTERSECTED.position );
 
-			}
+			// 		SELECTED = null;
 
-			function onDocumentMouseUp( event ) {
+			// 	}
 
-				event.preventDefault();
+			// 	renderer.domElement.style.cursor = 'auto';
 
-				controls.enabled = true;
-
-				if ( INTERSECTED ) {
-
-					plane.position.copy( INTERSECTED.position );
-
-					SELECTED = null;
-
-				}
-
-				renderer.domElement.style.cursor = 'auto';
-
-			}
+			// }
 		</script>
 	</body>
 </html>
