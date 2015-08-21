@@ -48,7 +48,10 @@ var events = [
     'homepage new',
     'Viewed login page',
     'Viewed report',
-    'Tutorial Shown'
+    'Tutorial Shown',
+    'Tutorial Video Started',
+    'Tutorial Video Finished',
+    'clicked logout link'
 ];
 
 var funnels = getFunnels(events);
