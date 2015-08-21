@@ -11,20 +11,18 @@
 			var camera, scene, renderer;
 			var geometry, material, mesh;
 
+			var data = {"nodes": [{"count": 4505, "event": "homepage new"}, {"count": 496, "event": "Tutorial Shown"}, {"count": 488, "event": "Viewed report"}, {"count": 876, "event": "Viewed login page"}], "links": [{"count": 496, "source": {"count": 4505, "event": "homepage new"}, "target": {"count": 496, "event": "Tutorial Shown"}}, {"count": 488, "source": {"count": 4505, "event": "homepage new"}, "target": {"count": 488, "event": "Viewed report"}}, {"count": 149, "source": {"count": 488, "event": "Viewed report"}, "target": {"count": 496, "event": "Tutorial Shown"}}, {"count": 876, "source": {"count": 4505, "event": "homepage new"}, "target": {"count": 876, "event": "Viewed login page"}}, {"count": 212, "source": {"count": 876, "event": "Viewed login page"}, "target": {"count": 496, "event": "Tutorial Shown"}}, {"count": 409, "source": {"count": 876, "event": "Viewed login page"}, "target": {"count": 488, "event": "Viewed report"}}]};
+			var funnels = {};
+
 			init();
 			animate();
 
 			function init() {
 
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-				camera.position.z = 20;
-				// camera.position.y = 20;
-				// camera.lookAt();
+				camera.position.z = 40;
 
 				scene = new THREE.Scene();
-
-				// var gridHelper = new THREE.GridHelper( 10, 1 );		
-				// scene.add( gridHelper );
 
 				var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.75 );
 				directionalLight.position.set( 0, 1, 0 );
@@ -38,40 +36,58 @@
 				renderer.setClearColor(0xf9fbfc);
 				renderer.setSize(window.innerWidth, window.innerHeight);
 
-				// controls = new THREE.OrbitControls( camera, renderer.domElement );
-				// controls.damping = 0.2;
-				// controls.addEventListener( 'change', animate );
+    			controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-				var marker = createFunnelMarker("My Funnel");
-				marker.position.x = -10;
-				scene.add(marker);
+				var marker1 = createFunnelMarker("My Funnel");
+				marker1.position.x = -10;
+				scene.add(marker1);
 
-				marker = createFunnelMarker("Another Funnel");
-				marker.position.x = 10;
-				scene.add(marker);
+				var marker2 = createFunnelMarker("Another Funnel");
+				marker2.position.x = 10;
+				marker2.position.y = 10;
+				scene.add(marker2);
 
-				scene.add(createSpline());
+				connectFunnelMarkers(marker1, marker2);
+
+				var marker3 = createFunnelMarker("Another Funnel");
+				marker3.position.x = 10;
+				marker3.position.y = -20;
+				scene.add(marker3);
+
+				connectFunnelMarkers(marker1, marker3);
 
 
 				// // Example text options : {'font' : 'helvetiker','weight' : 'normal', 'style' : 'normal','size' : 100,'curveSegments' : 300};
 
 				document.body.appendChild(renderer.domElement);
+
+				window.addEventListener('resize', function () {
+				  renderer.setSize(window.innerWidth, window.innerHeight);
+				  camera.aspect = window.innerWidth / window.innerHeight;
+				  camera.updateProjectionMatrix();
+				});
+			}
+
+			function parseData(data) {
+
 			}
 
 			function createFunnelMarker(name) {
 				var object = new THREE.Object3D();
 
 				var geometry = new THREE.CylinderGeometry( 5, 5, 2, 32 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xff8a44, specular: 0xdddddd, shininess: 30, shading: THREE.SmoothShading } );
+				var material = new THREE.MeshPhongMaterial( { color: 0xff8a44, specular: 0xdddddd, shininess: 10, shading: THREE.SmoothShading } );
 				var cylinder = new THREE.Mesh( geometry, material );
+				cylinder.rotation.z = Math.PI / 2;
 				cylinder.rotation.x = Math.PI / 2;
+
 				object.add(cylinder);
 
 				var textShapes = THREE.FontUtils.generateShapes( name, { "size": 2 } );
 				var text = new THREE.ShapeGeometry( textShapes );
 				text.computeBoundingBox();
 				var textMesh = new THREE.Mesh( text, new THREE.MeshBasicMaterial( { color: 0x222222 } ) ) ;
-				textMesh.position.y = -15;
+				textMesh.position.y = -8;
 
 				var textWidth = text.boundingBox.max.x - text.boundingBox.min.x;
 				textMesh.position.x = -textWidth * 0.5;
@@ -80,15 +96,18 @@
 				return object;
 			}
 
-			function createSpline() {
-				// Create a closed bent a sine-like wave
-				var curve = new THREE.SplineCurve3( [
-					new THREE.Vector3( -10, 0, 0 ),
-					new THREE.Vector3( -5, 5, 0 ),
-					new THREE.Vector3( 0, 0, 0 ),
-					new THREE.Vector3( 5, -5, 0 ),
-					new THREE.Vector3( 10, 0, 0 )
-				] );
+			function connectFunnelMarkers(funnel1, funnel2) {
+				var point1 = new THREE.Vector3( 0, 0, 0 ).lerpVectors(funnel1.position, funnel2.position, 0.5);
+				point1.y = funnel1.position.y;
+
+				var point2 = new THREE.Vector3( 0, 0, 0 ).lerpVectors(funnel1.position, funnel2.position, 0.5);
+				point2.y = funnel2.position.y;				
+				var curve = new THREE.CubicBezierCurve3(
+					funnel1.position,
+					point1,
+					point2,
+					funnel2.position
+				);
 
 				var geometry = new THREE.Geometry();
 				geometry.vertices = curve.getPoints( 50 );
@@ -97,12 +116,15 @@
 				var extrudedSpline = new THREE.TubeGeometry(curve, 64, 1, 12, false);
 				var mesh = new THREE.Mesh(extrudedSpline, material);
 
+				scene.add(mesh);
+
 				return mesh;
 			}
 
 			function animate() {
 				requestAnimationFrame(animate);
 				renderer.render(scene, camera);
+				controls.update();
 			}
 		</script>
 	</body>
