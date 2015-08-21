@@ -119,9 +119,10 @@ function scan (event, user) {
     linksMap = {}
     nodesArray = []
     linksArray = []
+    maxNodeCount = 0
+    maxLinkCount = 0
 
     funnels = json.loads(data)['results']
-    print funnels
 
     def indexObjToArray(obj):
         arr = []
@@ -139,6 +140,7 @@ function scan (event, user) {
 
         for event, step in zip(events, steps):
             count = step['count']
+            maxNodeCount = max(maxNodeCount, count)
 
             if event in nodesMap:
                 nodesMap[event]['count'] = max(nodesMap[event]['count'], count)
@@ -151,6 +153,7 @@ function scan (event, user) {
                 nextEvent = events[i + 1]
                 nextStep = steps[i + 1]
                 nextCount = nextStep['count']
+                maxLinkCount = max(maxLinkCount, step['count'], nextCount)
 
                 if count and nextEvent in nodesMap:
                     linkKey = '%s-%s' % (event, nextEvent)
@@ -166,7 +169,11 @@ function scan (event, user) {
 
     formatted_data = dict(
         nodes=nodesArray,
-        links=linksArray)
+        links=linksArray,
+        maxNodeCount=maxNodeCount,
+        maxLinkCount=maxLinkCount)
+
+    print json.dumps(formatted_data)
 
     with open('multi_funnel_data.json', 'w') as outfile:
         json.dump(formatted_data, outfile)
