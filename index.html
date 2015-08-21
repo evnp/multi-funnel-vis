@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<link href="/css/reset.css" rel="stylesheet" type="text/css">
+		<link href="/css/main.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<script src="/js/three.min.js"></script>
+		<script src="/js/OrbitControls.js"></script>
+		<script src="/js/helvetiker_regular.typeface.js"></script>
+		<script type="text/javascript">
+			var camera, scene, renderer;
+			var geometry, material, mesh;
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+				camera.position.z = 20;
+				// camera.position.y = 20;
+				// camera.lookAt();
+
+				scene = new THREE.Scene();
+
+				// var gridHelper = new THREE.GridHelper( 10, 1 );		
+				// scene.add( gridHelper );
+
+				var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.75 );
+				directionalLight.position.set( 0, 1, 0 );
+				scene.add( directionalLight );
+
+				var light = new THREE.PointLight( 0xffffff, 0.8, 100 );
+				light.position.set( 0, 20, 20 );
+				scene.add( light );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor(0xf9fbfc);
+				renderer.setSize(window.innerWidth, window.innerHeight);
+
+				// controls = new THREE.OrbitControls( camera, renderer.domElement );
+				// controls.damping = 0.2;
+				// controls.addEventListener( 'change', animate );
+
+				var marker = createFunnelMarker("My Funnel");
+				marker.position.x = -10;
+				scene.add(marker);
+
+				marker = createFunnelMarker("Another Funnel");
+				marker.position.x = 10;
+				scene.add(marker);
+
+				scene.add(createSpline());
+
+
+				// // Example text options : {'font' : 'helvetiker','weight' : 'normal', 'style' : 'normal','size' : 100,'curveSegments' : 300};
+
+				document.body.appendChild(renderer.domElement);
+			}
+
+			function createFunnelMarker(name) {
+				var object = new THREE.Object3D();
+
+				var geometry = new THREE.CylinderGeometry( 5, 5, 2, 32 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xff8a44, specular: 0xdddddd, shininess: 30, shading: THREE.SmoothShading } );
+				var cylinder = new THREE.Mesh( geometry, material );
+				cylinder.rotation.x = Math.PI / 2;
+				object.add(cylinder);
+
+				var textShapes = THREE.FontUtils.generateShapes( name, { "size": 2 } );
+				var text = new THREE.ShapeGeometry( textShapes );
+				text.computeBoundingBox();
+				var textMesh = new THREE.Mesh( text, new THREE.MeshBasicMaterial( { color: 0x222222 } ) ) ;
+				textMesh.position.y = -15;
+
+				var textWidth = text.boundingBox.max.x - text.boundingBox.min.x;
+				textMesh.position.x = -textWidth * 0.5;
+				object.add(textMesh);
+
+				return object;
+			}
+
+			function createSpline() {
+				// Create a closed bent a sine-like wave
+				var curve = new THREE.SplineCurve3( [
+					new THREE.Vector3( -10, 0, 0 ),
+					new THREE.Vector3( -5, 5, 0 ),
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 5, -5, 0 ),
+					new THREE.Vector3( 10, 0, 0 )
+				] );
+
+				var geometry = new THREE.Geometry();
+				geometry.vertices = curve.getPoints( 50 );
+
+				var material = new THREE.MeshPhongMaterial( { color: 0x2592ee, specular: 0xdddddd, shininess: 30, shading: THREE.SmoothShading } );
+				var extrudedSpline = new THREE.TubeGeometry(curve, 64, 1, 12, false);
+				var mesh = new THREE.Mesh(extrudedSpline, material);
+
+				return mesh;
+			}
+
+			function animate() {
+				requestAnimationFrame(animate);
+				renderer.render(scene, camera);
+			}
+		</script>
+	</body>
+</html>
