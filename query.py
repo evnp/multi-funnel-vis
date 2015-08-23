@@ -109,8 +109,8 @@ function scan (event, user) {
         api_secret = '96893320bc2706b278fb35280156de5c'
     )
     data = api.request('custom_query', '', {
-        'from_date': '2015-06-12',
-        'to_date': '2015-06-12',
+        'from_date': '2015-06-01',
+        'to_date': '2015-06-30',
         'script': script,
         'params': script_params
     })
@@ -119,8 +119,8 @@ function scan (event, user) {
     linksMap = {}
     nodesArray = []
     linksArray = []
-    maxNodeCount = 0
-    maxLinkCount = 0
+    maxNodeValue = 0
+    maxLinkValue = 0
 
     funnels = json.loads(data)['results']
 
@@ -139,30 +139,34 @@ function scan (event, user) {
         steps = indexObjToArray(funnel)
 
         for event, step in zip(events, steps):
-            count = step['count']
-            maxNodeCount = max(maxNodeCount, count)
+            value = step['value']
+            maxNodeValue = max(maxNodeValue, value)
 
             if event in nodesMap:
-                nodesMap[event]['count'] = max(nodesMap[event]['count'], count)
-            elif count:
-                nodesMap[event] = dict(event=event, count=count)
-                nodesArray.append(nodesMap[event])
+                nodesMap[event]['value'] = max(nodesMap[event]['value'], value)
+            elif value:
+                node = dict(
+                    event=event,
+                    value=value)
+
+                nodesMap[event] = node
+                nodesArray.append(node)
 
         for event, step, i in zip(events, steps, xrange(len(steps))):
             if i + 1 < len(funnel):
                 nextEvent = events[i + 1]
                 nextStep = steps[i + 1]
-                nextCount = nextStep['count']
-                maxLinkCount = max(maxLinkCount, step['count'], nextCount)
+                nextValue = nextStep['value']
+                maxLinkValue = max(maxLinkValue, step['value'], nextValue)
 
-                if count and nextEvent in nodesMap:
+                if value and nextEvent in nodesMap:
                     linkKey = '%s-%s' % (event, nextEvent)
 
                     if linkKey not in linksMap:
                         link = dict(
                             source=nodesArray.index(nodesMap[event]),
                             target=nodesArray.index(nodesMap[nextEvent]),
-                            count=nextCount)
+                            value=nextValue)
 
                         linksMap[linkKey] = link
                         linksArray.append(link)
@@ -170,8 +174,8 @@ function scan (event, user) {
     formatted_data = dict(
         nodes=nodesArray,
         links=linksArray,
-        maxNodeCount=maxNodeCount,
-        maxLinkCount=maxLinkCount)
+        maxNodeValue=maxNodeValue,
+        maxLinkValue=maxLinkValue)
 
     print json.dumps(formatted_data)
 
