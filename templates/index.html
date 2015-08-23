@@ -1,14 +1,14 @@
 <html>
 	<head>
-		<link href="/css/reset.css" rel="stylesheet" type="text/css">
-		<link href="/css/main.css" rel="stylesheet" type="text/css">
+		<link href="/static/css/reset.css" rel="stylesheet" type="text/css">
+		<link href="/static/css/main.css" rel="stylesheet" type="text/css">
 	</head>
 	<body>
-		<script src="/js/three.min.js"></script>
-		<script src="/js/OrbitControls.js"></script>
-		<script src="/js/helvetiker_regular.typeface.js"></script>
-        <script src="/js/d3.js" charset="utf-8"></script>
-        <script src="/js/sankey.js"></script>
+		<script src="/static/js/lib/three.min.js"></script>
+		<script src="/static/js/lib/OrbitControls.js"></script>
+		<script src="/static/js/lib/helvetiker_regular.typeface.js"></script>
+        <script src="/static/js/lib/d3.js" charset="utf-8"></script>
+        <script src="/static/js/lib/sankey.js"></script>
 		<script type="text/javascript">
 			var camera, scene, renderer;
 			var geometry, material, mesh, plane;
@@ -18,23 +18,25 @@
 			offset = new THREE.Vector3(),
 			INTERSECTED, SELECTED;
 
-            var data = {"maxLinkValue": 139096, "nodes": [{"event": "homepage new", "value": 139096}, {"event": "Viewed login page", "value": 28019}, {"event": "Viewed report", "value": 13614}, {"event": "Tutorial Shown", "value": 13194}, {"event": "Tutorial Video Started", "value": 7769}, {"event": "Tutorial Video Finished", "value": 1301}, {"event": "clicked logout link", "value": 985}], "maxNodeValue": 139096, "links": [{"source": 0, "target": 1, "value": 28019}, {"source": 1, "target": 2, "value": 13614}, {"source": 2, "target": 3, "value": 4311}, {"source": 3, "target": 4, "value": 148}, {"source": 4, "target": 5, "value": 32}, {"source": 5, "target": 6, "value": 1}, {"source": 0, "target": 3, "value": 1673}, {"source": 4, "target": 6, "value": 4}, {"source": 3, "target": 6, "value": 1}, {"source": 0, "target": 2, "value": 2445}, {"source": 2, "target": 6, "value": 99}, {"source": 0, "target": 6, "value": 985}, {"source": 2, "target": 4, "value": 268}, {"source": 0, "target": 4, "value": 978}]};
-
 			var funnelMarkers = {};
 			var objects = [];
 
-            var sankey = d3.sankey()
-                .size([window.innerWidth, window.innerHeight])
-                .nodeWidth(15)
-                .nodePadding(10)
-                .nodes(data.nodes)
-                .links(data.links)
-                .layout(32);
+            d3.json('/query', function (data) {
+                var sankey = d3.sankey()
+                    .size([window.innerWidth, window.innerHeight])
+                    .nodeWidth(15)
+                    .nodePadding(10)
+                    .nodes(data.nodes)
+                    .links(data.links)
+                    .layout(32);
 
-			init();
-			animate();
+                console.log(data)
 
-			function init() {
+			    init(data);
+			    animate();
+            });
+
+			function init(data) {
 
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 				camera.position.z = 100;

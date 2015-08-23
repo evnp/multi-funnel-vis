@@ -83,7 +83,8 @@ class Mixpanel(object):
             hash.update(self.api_secret)
         return hash.hexdigest()
 
-if __name__ == '__main__':
+
+def make_query(custom_query_script_path=None):
     import sys
     script = """
 var result = {};
@@ -98,9 +99,11 @@ function scan (event, user) {
 
 """
     script_params = '{}'
-    if len(sys.argv) > 1:
-        with open(sys.argv[1], 'r') as f:
+
+    if custom_query_script_path or len(sys.argv) > 1:
+        with open(custom_query_script_path or sys.argv[1], 'r') as f:
             script = f.read()
+
     if len(sys.argv) > 2:
         script_params = json.dumps(json.loads(sys.argv[2]))
 
@@ -177,7 +180,4 @@ function scan (event, user) {
         maxNodeValue=maxNodeValue,
         maxLinkValue=maxLinkValue)
 
-    print json.dumps(formatted_data)
-
-    with open('multi_funnel_data.json', 'w') as outfile:
-        json.dump(formatted_data, outfile)
+    return formatted_data
