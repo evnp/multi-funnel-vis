@@ -21,7 +21,7 @@
 			var funnelMarkers = {};
 			var objects = [];
 
-            d3.json('/query', function (data) {
+            d3.json('/data', function (data) {
                 var sankey = d3.sankey()
                     .size([window.innerWidth, window.innerHeight])
                     .nodeWidth(15)
