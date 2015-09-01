@@ -1,25 +1,25 @@
 <html>
-	<head>
-		<link href="/static/css/reset.css" rel="stylesheet" type="text/css">
-		<link href="/static/css/main.css" rel="stylesheet" type="text/css">
-	</head>
-	<body>
-		<script src="/static/js/lib/three.min.js"></script>
-		<script src="/static/js/lib/OrbitControls.js"></script>
-		<script src="/static/js/lib/helvetiker_regular.typeface.js"></script>
+    <head>
+        <link href="/static/css/reset.css" rel="stylesheet" type="text/css">
+        <link href="/static/css/main.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <script src="/static/js/lib/three.min.js"></script>
+        <script src="/static/js/lib/OrbitControls.js"></script>
+        <script src="/static/js/lib/helvetiker_regular.typeface.js"></script>
         <script src="/static/js/lib/d3.js" charset="utf-8"></script>
         <script src="/static/js/lib/sankey.js"></script>
-		<script type="text/javascript">
-			var camera, scene, renderer;
-			var geometry, material, mesh, plane;
+        <script type="text/javascript">
+            var camera, scene, renderer;
+            var geometry, material, mesh, plane;
 
-			var raycaster = new THREE.Raycaster();
-			var mouse = new THREE.Vector2(),
-			offset = new THREE.Vector3(),
-			INTERSECTED, SELECTED;
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2(),
+            offset = new THREE.Vector3(),
+            INTERSECTED, SELECTED;
 
-			var funnelMarkers = {};
-			var objects = [];
+            var funnelMarkers = {};
+            var objects = [];
 
             d3.json('/data', function (data) {
                 var sankey = d3.sankey()
@@ -28,252 +28,252 @@
                     .links(data.links)
                     .layout(32);
 
-			    init(data);
-			    animate();
+                init(data);
+                animate();
             });
 
-			function init(data) {
+            function init(data) {
 
-				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-				camera.position.z = 150;
-				camera.position.y = 50;
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 150;
+                camera.position.y = 50;
 
-				scene = new THREE.Scene();
+                scene = new THREE.Scene();
 
-				var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.75 );
-				directionalLight.position.set( 0, 1, 0 );
-				scene.add( directionalLight );
+                var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.75 );
+                directionalLight.position.set( 0, 1, 0 );
+                scene.add( directionalLight );
 
-				var light = new THREE.PointLight( 0xffffff, 0.8, 100 );
-				light.position.set( 0, 20, 20 );
-				scene.add( light );
+                var light = new THREE.PointLight( 0xffffff, 0.8, 100 );
+                light.position.set( 0, 20, 20 );
+                scene.add( light );
 
-				renderer = new THREE.WebGLRenderer({ antialias: true });
-				renderer.setClearColor(0xf9fbfc);
-				renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setClearColor(0xf9fbfc);
+                renderer.setSize(window.innerWidth, window.innerHeight);
 
-    			controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-				// var marker1 = createFunnelMarker("My Funnel");
-				// marker1.position.x = -10;
-				// scene.add(marker1);
+                // var marker1 = createFunnelMarker("My Funnel");
+                // marker1.position.x = -10;
+                // scene.add(marker1);
 
-				// var marker2 = createFunnelMarker("Another Funnel");
-				// marker2.position.x = 10;
-				// marker2.position.y = 10;
-				// scene.add(marker2);
+                // var marker2 = createFunnelMarker("Another Funnel");
+                // marker2.position.x = 10;
+                // marker2.position.y = 10;
+                // scene.add(marker2);
 
-				// connectFunnelMarkers(marker1, marker2);
+                // connectFunnelMarkers(marker1, marker2);
 
-				// var marker3 = createFunnelMarker("Another Funnel");
-				// marker3.position.x = 10;
-				// marker3.position.y = -20;
-				// scene.add(marker3);
+                // var marker3 = createFunnelMarker("Another Funnel");
+                // marker3.position.x = 10;
+                // marker3.position.y = -20;
+                // scene.add(marker3);
 
-				// connectFunnelMarkers(marker1, marker3);
+                // connectFunnelMarkers(marker1, marker3);
 
 
-				// // Example text options : {'font' : 'helvetiker','weight' : 'normal', 'style' : 'normal','size' : 100,'curveSegments' : 300};
+                // // Example text options : {'font' : 'helvetiker','weight' : 'normal', 'style' : 'normal','size' : 100,'curveSegments' : 300};
 
-				plane = new THREE.Mesh(
-					new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
-					new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } )
-				);
-				plane.visible = false;
-				scene.add( plane );
+                plane = new THREE.Mesh(
+                    new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+                    new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } )
+                );
+                plane.visible = false;
+                scene.add( plane );
 
-				document.body.appendChild(renderer.domElement);
+                document.body.appendChild(renderer.domElement);
 
-				window.addEventListener('resize', function () {
-				  renderer.setSize(window.innerWidth, window.innerHeight);
-				  camera.aspect = window.innerWidth / window.innerHeight;
-				  camera.updateProjectionMatrix();
-				});
+                window.addEventListener('resize', function () {
+                  renderer.setSize(window.innerWidth, window.innerHeight);
+                  camera.aspect = window.innerWidth / window.innerHeight;
+                  camera.updateProjectionMatrix();
+                });
 
-				// renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				// renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-				// renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+                // renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+                // renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+                // renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
 
-				parseData(data);
-			}
+                parseData(data);
+            }
 
-			function parseData(data) {
-				var max = data.maxLinkValue;
-				var nodes = data.nodes;
-				for (var i = nodes.length - 1; i >= 0; i--) {
-					var pastHalf = (i >= nodes.length * 0.5)
-					var node = nodes[i];
-					var marker = createFunnelMarker(node.event);
-					marker.position.z = Math.floor(Math.random() * 10) * 10;
-					marker.position.x = (node.x / 20 - 50);
-					marker.position.y = (node.y / 10 - 10);
-					scene.add(marker);
+            function parseData(data) {
+                var max = data.maxLinkValue;
+                var nodes = data.nodes;
+                for (var i = nodes.length - 1; i >= 0; i--) {
+                    var pastHalf = (i >= nodes.length * 0.5)
+                    var node = nodes[i];
+                    var marker = createFunnelMarker(node.event);
+                    marker.position.z = Math.floor(Math.random() * 10) * 10;
+                    marker.position.x = (node.x / 20 - 50);
+                    marker.position.y = (node.y / 10 - 10);
+                    scene.add(marker);
 
-					funnelMarkers[i] = marker;
-					objects.push(marker);
-				};
+                    funnelMarkers[i] = marker;
+                    objects.push(marker);
+                };
 
                 var tubeWidthScale = d3.scale.linear()
                     .domain([0, max])
                     .range([0.1, 10]);
 
-				var links = data.links;
-				for (var i = links.length - 1; i >= 0; i--) {
-					var link = links[i];
-					connectFunnelMarkers(funnelMarkers[nodes.indexOf(link.source)], funnelMarkers[nodes.indexOf(link.target)], tubeWidthScale(link.value));
-				};
-			}
+                var links = data.links;
+                for (var i = links.length - 1; i >= 0; i--) {
+                    var link = links[i];
+                    connectFunnelMarkers(funnelMarkers[nodes.indexOf(link.source)], funnelMarkers[nodes.indexOf(link.target)], tubeWidthScale(link.value));
+                };
+            }
 
-			function createFunnelMarker(name) {
-				var object = new THREE.Object3D();
+            function createFunnelMarker(name) {
+                var object = new THREE.Object3D();
 
-				var geometry = new THREE.CylinderGeometry( 5, 5, 2, 32 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xff8a44, specular: 0xdddddd, shininess: 10, shading: THREE.SmoothShading } );
-				var cylinder = new THREE.Mesh( geometry, material );
-				cylinder.rotation.z = Math.PI / 2;
-				cylinder.rotation.x = Math.PI / 2;
+                var geometry = new THREE.CylinderGeometry( 5, 5, 2, 32 );
+                var material = new THREE.MeshPhongMaterial( { color: 0xff8a44, specular: 0xdddddd, shininess: 10, shading: THREE.SmoothShading } );
+                var cylinder = new THREE.Mesh( geometry, material );
+                cylinder.rotation.z = Math.PI / 2;
+                cylinder.rotation.x = Math.PI / 2;
 
-				object.add(cylinder);
+                object.add(cylinder);
 
                 var textShapes, text, textMesh, textWidth;
 
-				textShapes = THREE.FontUtils.generateShapes( name, { "size": 2 } );
-				text = new THREE.ShapeGeometry( textShapes );
-				text.computeBoundingBox();
-				textMesh = new THREE.Mesh( text, new THREE.MeshBasicMaterial( { color: 0x222222 } ) ) ;
-				textMesh.position.y = -8;
+                textShapes = THREE.FontUtils.generateShapes( name, { "size": 2 } );
+                text = new THREE.ShapeGeometry( textShapes );
+                text.computeBoundingBox();
+                textMesh = new THREE.Mesh( text, new THREE.MeshBasicMaterial( { color: 0x222222 } ) ) ;
+                textMesh.position.y = -8;
 
-				textWidth = text.boundingBox.max.x - text.boundingBox.min.x;
-				textMesh.position.x = -textWidth * 0.5;
-				object.add(textMesh);
+                textWidth = text.boundingBox.max.x - text.boundingBox.min.x;
+                textMesh.position.x = -textWidth * 0.5;
+                object.add(textMesh);
 
                 // add a back for the text labels
-				textShapes = THREE.FontUtils.generateShapes( name, { "size": 2 } );
-				text = new THREE.ShapeGeometry( textShapes );
-				text.computeBoundingBox();
-				textMesh = new THREE.Mesh( text, new THREE.MeshBasicMaterial( { color: 0x222222 } ) ) ;
-				textMesh.position.y = -8;
+                textShapes = THREE.FontUtils.generateShapes( name, { "size": 2 } );
+                text = new THREE.ShapeGeometry( textShapes );
+                text.computeBoundingBox();
+                textMesh = new THREE.Mesh( text, new THREE.MeshBasicMaterial( { color: 0x222222 } ) ) ;
+                textMesh.position.y = -8;
                 textMesh.rotation.y = Math.PI;
 
-				textWidth = text.boundingBox.max.x - text.boundingBox.min.x;
-				textMesh.position.x = textWidth * 0.5;
-				object.add(textMesh);
+                textWidth = text.boundingBox.max.x - text.boundingBox.min.x;
+                textMesh.position.x = textWidth * 0.5;
+                object.add(textMesh);
 
-				return object;
-			}
+                return object;
+            }
 
-			function connectFunnelMarkers(funnel1, funnel2, width) {
-				var point1 = new THREE.Vector3( 0, 0, 0 ).lerpVectors(funnel1.position, funnel2.position, 0.5);
-				point1.y = funnel1.position.y;
+            function connectFunnelMarkers(funnel1, funnel2, width) {
+                var point1 = new THREE.Vector3( 0, 0, 0 ).lerpVectors(funnel1.position, funnel2.position, 0.5);
+                point1.y = funnel1.position.y;
 
-				var point2 = new THREE.Vector3( 0, 0, 0 ).lerpVectors(funnel1.position, funnel2.position, 0.5);
-				point2.y = funnel2.position.y;				
-				var curve = new THREE.CubicBezierCurve3(
-					funnel1.position,
-					point1,
-					point2,
-					funnel2.position
-				);
+                var point2 = new THREE.Vector3( 0, 0, 0 ).lerpVectors(funnel1.position, funnel2.position, 0.5);
+                point2.y = funnel2.position.y;                
+                var curve = new THREE.CubicBezierCurve3(
+                    funnel1.position,
+                    point1,
+                    point2,
+                    funnel2.position
+                );
 
-				var geometry = new THREE.Geometry();
-				geometry.vertices = curve.getPoints( 50 );
+                var geometry = new THREE.Geometry();
+                geometry.vertices = curve.getPoints( 50 );
 
-				var material = new THREE.MeshPhongMaterial( { color: 0x2592ee, specular: 0xdddddd, shininess: 30, shading: THREE.SmoothShading } );
-				var extrudedSpline = new THREE.TubeGeometry(curve, 64, width, 12, false);
-				var mesh = new THREE.Mesh(extrudedSpline, material);
+                var material = new THREE.MeshPhongMaterial( { color: 0x2592ee, specular: 0xdddddd, shininess: 30, shading: THREE.SmoothShading } );
+                var extrudedSpline = new THREE.TubeGeometry(curve, 64, width, 12, false);
+                var mesh = new THREE.Mesh(extrudedSpline, material);
 
-				scene.add(mesh);
+                scene.add(mesh);
 
-				return mesh;
-			}
+                return mesh;
+            }
 
-			function animate() {
-				requestAnimationFrame(animate);
-				renderer.render(scene, camera);
-				controls.update();
-			}
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+                controls.update();
+            }
 
-			// function onDocumentMouseMove( event ) {
+            // function onDocumentMouseMove( event ) {
 
-			// 	event.preventDefault();
+            //     event.preventDefault();
 
-			// 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-			// 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+            //     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            //     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-			// 	raycaster.setFromCamera( mouse, camera );
+            //     raycaster.setFromCamera( mouse, camera );
 
-			// 	if ( SELECTED ) {
+            //     if ( SELECTED ) {
 
-			// 		var intersects = raycaster.intersectObject( plane );
-			// 		SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
-			// 		return;
+            //         var intersects = raycaster.intersectObject( plane );
+            //         SELECTED.position.copy( intersects[ 0 ].point.sub( offset ) );
+            //         return;
 
-			// 	}
+            //     }
 
-			// 	var intersects = raycaster.intersectObjects( scene.children );
+            //     var intersects = raycaster.intersectObjects( scene.children );
 
-			// 	if ( intersects.length > 0 ) {
+            //     if ( intersects.length > 0 ) {
 
-			// 		if ( INTERSECTED != intersects[ 0 ].object ) {
-			// 			INTERSECTED = intersects[ 0 ].object;
+            //         if ( INTERSECTED != intersects[ 0 ].object ) {
+            //             INTERSECTED = intersects[ 0 ].object;
 
-			// 			plane.position.copy( INTERSECTED.position );
-			// 			plane.lookAt( camera.position );
-			// 		}
+            //             plane.position.copy( INTERSECTED.position );
+            //             plane.lookAt( camera.position );
+            //         }
 
-			// 		renderer.domElement.style.cursor = 'pointer';
+            //         renderer.domElement.style.cursor = 'pointer';
 
-			// 	} else {
+            //     } else {
 
-			// 		INTERSECTED = null;
+            //         INTERSECTED = null;
 
-			// 		renderer.domElement.style.cursor = 'auto';
+            //         renderer.domElement.style.cursor = 'auto';
 
-			// 	}
+            //     }
 
-			// }
+            // }
 
-			// function onDocumentMouseDown( event ) {
+            // function onDocumentMouseDown( event ) {
 
-			// 	event.preventDefault();
+            //     event.preventDefault();
 
-			// 	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
+            //     var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( camera );
 
-			// 	var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+            //     var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
 
-			// 	var intersects = raycaster.intersectObjects( scene.children );
+            //     var intersects = raycaster.intersectObjects( scene.children );
 
-			// 	if ( intersects.length > 0 ) {
-			// 		controls.enabled = false;
+            //     if ( intersects.length > 0 ) {
+            //         controls.enabled = false;
 
-			// 		SELECTED = intersects[ 0 ].object;
+            //         SELECTED = intersects[ 0 ].object;
 
-			// 		var intersects = raycaster.intersectObject( plane );
-			// 		offset.copy( intersects[ 0 ].point ).sub( plane.position );
+            //         var intersects = raycaster.intersectObject( plane );
+            //         offset.copy( intersects[ 0 ].point ).sub( plane.position );
 
-			// 		renderer.domElement.style.cursor = 'move';
+            //         renderer.domElement.style.cursor = 'move';
 
-			// 	}
+            //     }
 
-			// }
+            // }
 
-			// function onDocumentMouseUp( event ) {
+            // function onDocumentMouseUp( event ) {
 
-			// 	event.preventDefault();
+            //     event.preventDefault();
 
-			// 	controls.enabled = true;
+            //     controls.enabled = true;
 
-			// 	if ( INTERSECTED ) {
+            //     if ( INTERSECTED ) {
 
-			// 		plane.position.copy( INTERSECTED.position );
+            //         plane.position.copy( INTERSECTED.position );
 
-			// 		SELECTED = null;
+            //         SELECTED = null;
 
-			// 	}
+            //     }
 
-			// 	renderer.domElement.style.cursor = 'auto';
+            //     renderer.domElement.style.cursor = 'auto';
 
-			// }
-		</script>
-	</body>
+            // }
+        </script>
+    </body>
 </html>
